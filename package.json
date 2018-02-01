@@ -1,6 +1,6 @@
 {
   "name": "ln3scan",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A reg-ex based scanner and grabber of ln3 strings",
   "main": "ln3scan.js",
   "bin": {
