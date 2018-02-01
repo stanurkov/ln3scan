@@ -292,7 +292,7 @@ if (files) {
 
             for (i in lng) {
                 s = lng[i];
-                if (s.startsWith(newStringStart)) {
+                if (typeof s === 'string' && s.startsWith(newStringStart)) {
                     lng[i] = s.substr(newStringStart.length);
                 }
             }
