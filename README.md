@@ -3,7 +3,7 @@
 
 [![MIT][mit-image]][mit-url]
 
-> Custom, simple, extendable internationalization module for JavaScript applications
+> Utility for ln3  - custom, simple, extendable internationalization module for JavaScript applications
 
 
 [mit-image]: https://github.com/stanurkov/observed-object/blob/master/mit.svg
