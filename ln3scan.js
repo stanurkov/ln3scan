@@ -1,11 +1,53 @@
 const fs = require("fs");
 const path = require('path');
 
-console.log("Arguments are: ", process.argv);
+const usageDescription = "ln3scan [scan_directory] [--output <output_directory>] [--file <setup_module_name>]"
 
-let options = [
+const options = [
+    {
+        long: "--output",
+        short: "-o",
+        shortDescription: "[--output <output_directory>]",
+        description: 
+            "sets the output directory, i.e. the place where the resulting ln3 configuration module is to be stored \n"+
+            "                and where the language JSON files are kept",
+        arguments: 1,
+        processor: (argument) => {
+            outDir = argument + "";
+            if (!outDir.endsWith(sep)) {
+                outDir += sep;
+            }
+        }
+    },
+    {
+        long: "--file",
+        short: "-f",
+        shortDescription: "[--file <setup_module_name>]",
+        description: 
+            "sets the name of the resulting module as it will be used in the target project",
+        arguments: 1,
+        processor: (argument) => {
+            outFilename = argument + "";
+            if (outFilename.indexOf(sep) < 0) {
+                outFilename = outDir + outFilename;
+            }
+        }
+    },
+    {
+        isSingleHandler: true,
+        processor: (argument) => {
+            startDir = argument + "";
+            if (!startDir.endsWith(sep)) {
+                startDir += sep;
+            }
+        }
+    },
+    {
+        long: "--help",
+        short: "-h",
+        isHelp: true
+    }
 ];
-
 
 let scanLevel = 0;
 
@@ -13,9 +55,93 @@ const newStringStart = '!!';
 
 const sep = path.sep;
 
-const outDir = '.' + sep + 'ln3' + sep; 
+let startDir = '.' + sep;
 
-const outFilename = outDir + 'ln3setup.js';
+let outDir = '.' + sep + 'ln3' + sep; 
+
+let outFilename = outDir + 'ln3setup.js';
+
+// todo: command line argument processing should be delivered as a separate module
+
+let processArguments = (argv, startIndex, options) => {
+    let i = startIndex;
+    
+    const singleHandler = options.find(o => ((o.isSingleHandler || o.singleHandler) && o.processor));
+
+    while (i < argv.length) {
+        let s = argv[i++];
+        let o = null;
+
+        let sLower = s.toLowerCase();
+
+        if (s.startsWith("--")) {
+            o = options.find( o => (o.long === sLower) );
+        } else if (s.startsWith("-")) {
+            o = options.find( o => (o.short === sLower) );
+        } else {
+            o = singleHandler;
+        }
+
+        if (o) {
+            let arguments = [];
+            let count = o.arguments;
+            if (count > 0) {
+                while (count > 0 && i < argv.length) {
+                    arguments.push( argv[i++] );
+                    count--;
+                }
+                if (count > 0) {
+                    console.error("Invalid number of arguments for option ", s);
+                    process.exit(1);
+                }
+            } 
+                
+            arguments.push(s);
+            
+            if (o.isHelp) {
+                console.log("Usage: ", usageDescription, "\n\nAvailable options: ");
+
+                let optionCount = 0;
+
+                options.forEach(o => {
+                    if (o.description) {
+                        let d = o.long;
+
+                        if (!d) d = "";
+
+                        d += ((o.short) ? (", " + o.short) : "") + "  ";
+
+                        while (d.length < 16) d += " ";
+
+                        console.log(d + o.description);
+                    } 
+                });
+
+                process.exit();
+
+            } else {
+                if (o.processor) {
+                    if (o.arguments === 1 || o === singleHandler) {
+                        o.processor(arguments[0], o)
+                    } else {
+                        o.processor(arguments, o);
+                    }
+                }
+            }
+
+        } else {
+            console.warn("Unknown option: ", s);
+        }
+    }
+};
+
+processArguments(process.argv, 2, options);
+
+console.log("Scan directory: ", startDir);
+console.log("Output directory: ", outDir);
+console.log("Output module name: ", outFilename);
+
+// ---------------------------------------------------------------------------------
 
 const translations = {};
 
@@ -75,7 +201,7 @@ const scanDir = (path) => {
     }
 }
 
-scanDir('.' + sep);
+scanDir(startDir);
 
 const sortObject = (object) => {
     var sortedObj = {},

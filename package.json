@@ -17,5 +17,8 @@
     "utility"
   ],
   "author": "Stefan Tanurkov",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "json-beautify": "^1.0.1"
+  }
 }
